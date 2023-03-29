@@ -32,12 +32,13 @@ df = load_df_from_gsheet()
 
 
 # set start date & end dates
+now = datetime.date.today()
 a, b = st.columns(2)
 with a:
-    d_start = st.date_input("Start Date", datetime.date(2023, 1, 1))
+    d_start = st.date_input("Start Date", datetime.date(2023, now.month, 1))
 
 with b:
-    d_end = st.date_input("End Date", datetime.date.today())
+    d_end = st.date_input("End Date", now)
 
 
 # choose location
@@ -55,31 +56,29 @@ df_interval.set_index('Date', inplace=True)
 
 # metrics
 ## as lead
-st.markdown('As Lead:')
-full, half, other, _ = st.columns(4)
+full, _, half, other = st.columns(4)
 with full:
-    st.metric('Full', len(df_interval[(df_interval.Position == 'Lead') & (df_interval.Length == 'Full')]))
+    st.metric('Lead - Full', len(df_interval[(df_interval.Position == 'Lead') & (df_interval.Length == 'Full')]))
 
 with half:
-    st.metric('Half', len(df_interval[(df_interval.Position == 'Lead') & (df_interval.Length == 'Half')]))
+    st.metric('Lead - Half', len(df_interval[(df_interval.Position == 'Lead') & (df_interval.Length == 'Half')]))
 
 with other:
-    st.metric('Other', len(df_interval[(df_interval.Position == 'Lead') & (df_interval.Length == 'Other')]))
+    st.metric('Lead - Other', len(df_interval[(df_interval.Position == 'Lead') & (df_interval.Length == 'Other')]))
 
 ## as TA
-st.markdown('As TA:')
 full, full_proj, half, other = st.columns(4)
 with full:
-    st.metric('Full', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Full') & (df_interval.Topic != 'Project')]))
+    st.metric('TA - Full', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Full') & (df_interval.Topic != 'Project')]))
 
 with full_proj:
-    st.metric('Full Project', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Full') & (df_interval.Topic == 'Project')]))
+    st.metric('TA - Project', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Full') & (df_interval.Topic == 'Project')]))
 
 with half:
-    st.metric('Half', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Half')]))
+    st.metric('TA - Half', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Half')]))
 
 with other:
-    st.metric('Other', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Other')]))
+    st.metric('TA - Other', len(df_interval[(df_interval.Position == 'TA') & (df_interval.Length == 'Other')]))
 
 
 # show dataframe
