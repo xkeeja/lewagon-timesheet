@@ -1,0 +1,4 @@
+pip>=23
+streamlit
+pandas
+gspread
