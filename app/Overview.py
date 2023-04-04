@@ -18,16 +18,21 @@ st.markdown('***')
 
 # define functions
 # @st.cache_data
-def load_df_from_gsheet():
+def load_gsheet():
     gc = gspread.service_account_from_dict(st.secrets.service_account)
     sh = gc.open_by_key(st.secrets.sheet.sheet_key)
-    df = pd.DataFrame(sh.sheet1.get_all_records())
+    return sh
+
+def load_df_from_gsheet(ws):
+    df = pd.DataFrame(ws.sheet1.get_all_records())
     df['Date'] = pd.to_datetime(df['Date']).dt.date
+    df.sort_values(by=['Date'])
     return df
 
 
 # load df
-df = load_df_from_gsheet()
+worksheet = load_gsheet()
+df = load_df_from_gsheet(worksheet)
 
 
 # set start date & end dates
@@ -49,7 +54,7 @@ st.markdown('***')
 
 
 # filter df to chosen start & end dates
-df_interval = df[(df.Date >= d_start) & (df.Date <= d_end) & (df.Location == loc)].sort_values(by=['Date'])
+df_interval = df[(df.Date >= d_start) & (df.Date <= d_end) & (df.Location == loc)]
 df_interval.set_index('Date', inplace=True)
 
 
@@ -82,3 +87,14 @@ with other:
 
 # show dataframe
 st.dataframe(df_interval, use_container_width=True)
+
+
+# update paid status
+if st.button(f'Update paid from {d_start} to {d_end}'):
+    success = st.empty()
+    with st.spinner('⏳ Updating paid statuses...'):
+        updated = (df['Date'] >= d_start) & (df['Date'] <= d_end) & (df['Location'] == loc)
+        df.loc[updated, 'Paid'] = '✅'
+        df = df.astype({'Date':'string'})
+        worksheet.sheet1.update([df.columns.values.tolist()] + df.values.tolist())
+    success.success('Updated paid statuses!', icon='✅')
